@@ -19,7 +19,7 @@ class deduction_method:
 		self.x=[7,7]
 		self.a=9
 		self.c=7
-		self.m=1024
+		self.m=2**20
 
 	def random(self, num_min=0, num_max=1):
 		self.x[0] = self.x[1]

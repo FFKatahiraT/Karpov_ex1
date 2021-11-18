@@ -1,30 +1,46 @@
 import matplotlib.pyplot as plt
 from random_methods import *
+import pandas as pd
 
-def calc_hi(num, num_theor):
+def calc_hi_sqr(num, num_theor):
 	hi_sqr = 0
 	for i in range(len(num)):	#calc hi_sqr criteria
 		hi_sqr+=(num[i] - num_theor)**2/num_theor
 	return hi_sqr
 
+def norm(func):
+	max_func = max(func)
+	for i in range(len(func)):
+		func[i] /= max_func
+	return func
+
+def find_probabilities(func):
+	sum_func = sum(func)
+	for i in range(len(func)):
+		func[i] /= sum_func
+	return func
+
 def frequency_test(rand, method):
-	k=100
+	k=10
 	N=10**5
-	num=[]
+	num, num_freq=[], []
 	num_theor=[]
 	for i in range(k+1):	#init 
-		num.append(0)
+		num_freq.append(0)
 		num_theor.append(N/k)
 	for i in range(N):
-		num[int(rand.random(0,k))] += 1	#add a point to the value that we get here
-	x=[]
-	for i in range(k+1):	#init x axis
-		x.append(i/k)
-	hi_sqr = calc_hi(num, N/k)
+		num.append(int(rand.random(0,k)))
+		num_freq[num[i]] += 1	#add a point to the value that we get here
+	
+	num_freq = find_probabilities(num_freq)	#normalize num_freq
+	# print(num_freq, 'N_exp')
+	# print(1/k, 'N_theor')
+	hi_sqr = calc_hi_sqr(num_freq, 1/k)
 
 	print(hi_sqr, 'hi_sqr', method)
-	plt.plot(x, num, label='Experiment')
-	plt.plot(x, num_theor, color='green', label='Theoretical')
+	plt.plot(range(len(num_theor)), num_theor, color='green', label='Theoretical')
+	data = pd.Series(num)
+	data.hist(bins=int(max(num)), label='Experiment')
 	plt.title('Frequency test: '+method+'. k='+str(k)+', N='+str(N))
 	plt.legend(loc='best')
 	plt.ylabel('Number of operations')
@@ -37,16 +53,37 @@ def serial_test(rand, method):
 	d = 10
 	N = 10**5
 	u, z = [], []
-	for i in range(N):
-		u.append(int(rand.random(0,d)))
-	i = 0
-	while i < N:
-		z.append(int(str(u[i])+str(u[i+1])))
-		i += 2
+	N_exp, N_theor = [], []
+	for i in range(100):
+		N_exp.append(0)
+		N_theor.append(N/200)
 
-	hi_sqr = calc_hi(z, N/200)
+	for i in range(N):
+		randint = int(rand.random(0,d))
+		if randint < 10:
+			u.append(randint)
+	i = 0
+	while i < len(u)-1:
+		z.append(int(str(u[i])+str(u[i+1])))	#46 im
+		i += 2
+	for i in range(len(z)):
+		N_exp[z[i]] += 1	#add a point to the value that we get here
+	N_exp = find_probabilities(N_exp)	#normalize num_freq
+	# print(N_exp, 'N_exp')
+	# print(N_theor[0], 'N_theor')
+	hi_sqr = calc_hi_sqr(N_exp, 1/100)	#calc hi
 
 	print('serial test', method, 'hi_sqr:', round(hi_sqr,2))
+	data = pd.Series(z)
+	data.hist(bins=int(max(z)), label='Experiment')
+	plt.plot(range(100), N_theor, color='green', label='Theoretical')
+	plt.title('Serial test: '+method+'. d='+str(d)+', N='+str(N))
+	plt.legend(loc='best')
+	plt.ylabel('Number of operations')
+	plt.xlabel('Value')
+	plt.grid()
+	plt.savefig('serial_test_'+method+'.png')
+	plt.close()
 
 def poker_test(rand, method):
 	d = 10
@@ -91,7 +128,13 @@ def poker_test(rand, method):
 		for j in range(len(z[i])):
 			num += (z[i][j])
 		z[i] = int(num)
-	hi_sqr = calc_hi(z, N/500000)	#calc hi
+	N_exp = []
+	for i in range(len(cases)):
+		N_exp.append(cases[i])
+	N_exp = find_probabilities(N_exp)	#normalize num_freq
+	# print(N_exp, 'N_exp')
+	# print(1/7)
+	hi_sqr = calc_hi_sqr(N_exp, 1/7)	#calc hi
 
 	sum_cases = sum(cases)
 	for i in range(len(cases)):	#calc probabilities of cases
@@ -178,23 +221,88 @@ def correlation_test(rand, method):
 	else:
 		print('correlation_test failed, R=', R)
 
+def interval_test(rand, method):
+	k = 10
+	N = 10**4
+	d = 1
+	alpha = 0.5
+	psi, psi_freq = [], []
+	exp_val = 0
+	hi_sqr = 0
+	sigma = 1
+	for i in range(N):
+		psi.append(int(rand.random(0,k)))
 
+	for i in range(max(psi)+1):
+		psi_freq.append(0)
+	for i in range(N):
+		psi_freq[psi[i]] += 1
+	psi_freq = find_probabilities(psi_freq)
+	for i in range(max(psi)+1):
+		exp_val += psi_freq[i]*i#find exp val
+	for i in range(int(exp_val)+1,max(psi)+1):
+		if 0.33*sum(psi_freq) < sum(psi_freq[int(exp_val):i]) < 0.4*sum(psi_freq):
+			sigma = i - exp_val
+			if sigma == 0:
+				print('Sigma error')
+				sigma = 1
+			break
+	else:
+		print('Sigma not found')
+
+	n = sigma**2/d**2/alpha
+	d_theor = (k*0.34)/(n*alpha)**0.5	
+	n = int(n)
+	if d_theor >= d:
+		print('Accepted, d_theor=', round(d_theor,2))
+	else:
+		print('Rejected, d_theor=', round(d_theor,2))
+	average = []	#find av
+	running = True
+	for j in range(1, n):
+		average.append(0)
+		for i in range((j-1)*n,j*n):
+			if i < N:
+				average[j-1] += psi[i]/n
+			else:
+				running=False
+				break
+		if running==False:
+			del average[len(average)-1]
+			break
+
+	# counter = 0
+	# for i in range(len(average)):
+	# 	if exp_val-d <= average[i] <= exp_val+d:
+	# 		counter += 1
+	# alpha = 1-counter/len(average)
+
+	# print(average, 'average')
+	print(n, 'n')
+	print(exp_val, 'exp_val')
+
+
+print('FREQUENCY TEST')
 frequency_test(max_length_sequence(), 'max length sequence')
 frequency_test(deduction_method(), 'deduction method')
 frequency_test(mean_sqr_method(), 'mean square method')
-print('')
+print('\n SERIAL TEST')
 serial_test(max_length_sequence(), 'max length sequence')
 serial_test(deduction_method(), 'deduction method')
 serial_test(mean_sqr_method(), 'mean square method')
-print('')
+print('\n POKER TEST')
 poker_test(max_length_sequence(), 'max length sequence')
 poker_test(deduction_method(), 'deduction method')
 poker_test(mean_sqr_method(), 'mean square method')
-print('')
+print('\n MONOTONY CHECK')
 monotony_check(max_length_sequence(), 'max length sequence')
 monotony_check(deduction_method(), 'deduction method')
 monotony_check(mean_sqr_method(), 'mean square method')
-print('')
+print('\n CORRELATION TEST')
 correlation_test(max_length_sequence(), 'max length sequence')
 correlation_test(deduction_method(), 'deduction method')
 correlation_test(mean_sqr_method(), 'mean square method')
+print('\n INTERVAL TEST')
+interval_test(max_length_sequence(), 'max length sequence')
+interval_test(deduction_method(), 'deduction method')
+interval_test(mean_sqr_method(), 'mean square method')
