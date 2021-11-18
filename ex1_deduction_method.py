@@ -1,18 +1,12 @@
-def find_similar(numbers_set):
-	period = len(numbers_set)
-	similar=[]
-	i=0
-	counter = 0
-	while i < len(numbers_set):
-		num = numbers_set[i]
-		del numbers_set[i]
-		if num in numbers_set and num not in similar:
-			similar.append(num)
-		elif num in similar:
-			period = counter
-			break
-		counter+=1
-	return similar, period
+def find_period(x):
+	for i in range(1,len(x)):
+		if x[0] == x[i]:
+			if x[1] == x[i+1] and x[2] == x[i+2]:
+				period = i+1
+				break
+	else:
+		period = len(x)
+	return period
 
 def deduction_method_calc(x, a, c, m, quantity):
 	for i in range(1, quantity):
@@ -58,19 +52,23 @@ def theorem1_third_condition(a, m):
 	return True
 
 def check_theorem1(x,a,c,m, prime_numbers):
-	quantity = 20
+	quantity = m
 	x = deduction_method_calc(x,a,c,m,quantity)
-	period = find_similar(x[:])[1]	#check similar values
+	period = find_period(x[:])	#check similar values
 	print('Theorem1:')
 	print('c&m mutually prime:', theorem1_first_condition(c,m))
 	print('(a-1)/p & m/p -- integers:', theorem1_second_condition(a,m,prime_numbers))
 	print('(a-1)/4 -- int if m/4 -- int:', theorem1_third_condition(a,m))
-	print(x, 'x')
+	# print(x, 'x')
 	print(period, ' period\n')
+	# if period>m-2:
+	# 	print('win')
 
 def deduction_method():
 	prime_numbers=get_prime(1000)
-	check_theorem1([7],9,7,16, prime_numbers)
+	# for i in range(100,1000):
+	# 	check_theorem1([7],9,7,i, prime_numbers)
+	check_theorem1([7],9,7,2**20, prime_numbers)
 	check_theorem1([7],10,7,12, prime_numbers)
 	check_theorem1([7],9,7,15, prime_numbers)
 	check_theorem1([7],9,8,16, prime_numbers)
