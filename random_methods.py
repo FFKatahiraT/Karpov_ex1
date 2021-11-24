@@ -16,10 +16,15 @@ class mean_sqr_method:
 
 class deduction_method:
 	def __init__(self):
-		self.x=[7,7]
-		self.a=9
-		self.c=7
-		self.m=2**20
+		self.x=[17,17]
+		self.a=81
+		self.c=131
+		self.m=2**30
+		self.init_x()
+
+	def init_x(self):
+		for i in range(100):
+			output = self.random()
 
 	def random(self, num_min=0, num_max=1):
 		self.x[0] = self.x[1]
@@ -32,16 +37,21 @@ class deduction_method:
 class max_length_sequence:
 	def __init__(self):
 		self.m = 127
-		self.l = 15
+		self.l = 16
 		self.x = []	
 		self.init_x()
 
 	def init_x(self):
+		rand = deduction_method()
+		intit_part_1 = self.m//3*2
+		# intit_part_1 = self.m//2*2
 		for i in range(2):
-			self.x.append([])
-			for j in range(self.m):
+			self.x.append([1])
+			for j in range(intit_part_1):
+				self.x[i].append(int(rand.random()))
+			for j in range(self.m-1-intit_part_1):
 				self.x[i].append(1)
-		for i in range(1000):	#skip initial values
+		for i in range(1200):	#skip initial values
 			self.random()
 
 	def random(self, num_min=0, num_max=1):
@@ -50,9 +60,10 @@ class max_length_sequence:
 			self.x[1][i+1] = self.x[0][i]
 		self.x[0] = self.x[1][:]
 		output=''
-		for i in range(10):
+		b_num = 16
+		for i in range(b_num):
 			output+=str(self.x[1][i])
 		output = int(output,2)
-		output *= (num_max-num_min)/(2**10-1)	#bring the value to the defined range
+		output *= (num_max-num_min)/(2**b_num-1)	#bring the value to the defined range
 		output += num_min
 		return output
