@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from random_methods import *
-import pandas as pd
 import random
 
 def calc_hi_sqr(num, num_theor):
@@ -48,10 +47,8 @@ def frequency_test(rand, method):
 	print(hi_cr1,'<', round(hi_sqr,2), '<',hi_cr2, method, result)
 
 	plt.plot(range(len(num_theor)), num_theor, color='green', label='Theoretical')
-	plt.scatter(range(len(num_freq)), num_freq, label='Experiment', color='orange')
+	plt.plot(range(len(num_freq)), num_freq, label='Experiment', color='orange')
 	plt.fill_between(range(len(num_freq)),num_freq, alpha=0.5, color='orange')
-	# data = pd.Series(num)
-	# data.hist(bins=int(max(num)), label='Experiment')
 	plt.title('Frequency test: '+method+'. k='+str(k)+', N='+str(N))
 	plt.legend(loc='best')
 	plt.ylabel('Number of operations')
@@ -94,7 +91,7 @@ def serial_test(rand, method):
 		result = 'failed'
 	print(hi_cr1,'<', round(hi_sqr,2), '<',hi_cr2, method, result)
 
-	plt.scatter(range(len(N_exp)), N_exp, label='Experiment', color='orange')
+	plt.plot(range(len(N_exp)), N_exp, label='Experiment', color='orange')
 	plt.plot(range(len(N_theor)), N_theor, color='green', label='Theoretical')
 	plt.fill_between(range(len(N_exp)),N_exp, alpha=0.5, color='orange')
 	plt.title('Serial test: '+method+'. d='+str(d)+', N='+str(N))
@@ -333,6 +330,7 @@ def interval_test(rand, method):
 print('FREQUENCY TEST')
 frequency_test(max_length_sequence(), 'max length sequence')
 frequency_test(deduction_method(), 'deduction method')
+# frequency_test(exp_distr(), 'exp_distr')
 # frequency_test(random, 'random')
 frequency_test(mean_sqr_method(), 'mean square method')
 print('\n SERIAL TEST')
@@ -340,6 +338,7 @@ serial_test(max_length_sequence(), 'max length sequence')
 # serial_test(random, 'random')
 serial_test(deduction_method(), 'deduction method')
 serial_test(mean_sqr_method(), 'mean square method')
+# serial_test(exp_distr(), 'exp_distr')
 print('\n POKER TEST')
 poker_test(max_length_sequence(), 'max length sequence')
 poker_test(deduction_method(), 'deduction method')
@@ -351,7 +350,8 @@ correlation_test(mean_sqr_method(), 'mean square method')
 print('\n INTERVAL TEST')
 interval_test(max_length_sequence(), 'max length sequence')
 interval_test(deduction_method(), 'deduction method')
-# interval_test(mean_sqr_method(), 'mean square method')
+interval_test(exp_distr(), 'exp_distr')
+interval_test(mean_sqr_method(), 'mean square method')
 
 # print('\n MONOTONY CHECK')
 # monotony_check(max_length_sequence(), 'max length sequence')
